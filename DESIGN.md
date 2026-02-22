@@ -155,15 +155,3 @@ All tasks and event logs are persisted to `database.json`.
 | Persistence       | JSON file                     | Avoids native C++ build issues on Windows           |
 | Agent structure   | Abstract BaseAgent            | Centralizes retry/logging, keeps agents tiny        |
 | Agent failures    | Simulated via `Math.random()` | Focuses evaluation on orchestration, not LLM calls  |
-
----
-
-## Future Improvements
-
-| Improvement                        | Why                                                                                        |
-| ---------------------------------- | ------------------------------------------------------------------------------------------ |
-| **Docker Compose**                 | One command to start backend + frontend + database                                         |
-| **XState State Machine**           | Replace linear `while` loop with a DAG-based formal state machine for complex agent graphs |
-| **Drag-and-drop Pipeline Builder** | Let users arrange and configure agents visually                                            |
-| **WebSocket upgrade**              | Enable user-initiated pause/cancel during agent execution                                  |
-| **Real LLM Integration**           | Replace simulated delays with actual API calls to OpenAI or similar                        |

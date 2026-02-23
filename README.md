@@ -2,7 +2,7 @@
 
 > A lightweight platform where multiple simulated AI agents collaborate to complete a complex research task — built for the **Paramount Take-Home Assignment**.
 
-**Tech Stack:** Node.js · Express · Next.js · TypeScript · Server-Sent Events · Python . FastAPI
+**Tech Stack:** Python · Flask · React · Vite · Server-Sent Events · Pytest
 
 ---
 
@@ -52,15 +52,16 @@
 
 ## ✨ Features & Stretch Goals Completed
 
-| Feature                                                                            | Status |
-| ---------------------------------------------------------------------------------- | ------ |
-| **Multi-Agent Pipeline** (Planner → Researcher → Reviewer → Writer)                | ✅     |
-| **Parallel Sub-tasks** – Researcher uses `Promise.all` for concurrent research     | ✅     |
-| **Retry / Error Handling** – `BaseAgent` retries with exponential backoff          | ✅     |
-| **Real-Time Updates** – Server-Sent Events (SSE) stream progress live to the UI    | ✅     |
-| **Agent Configuration** – Toggle the Reviewer Agent on/off from the UI             | ✅     |
-| **Persistent State** – JSON file store survives server restarts                    | ✅     |
-| **Unit Tests** – Jest tests validate Orchestrator logic, retries & config skipping | ✅     |
+| Feature                                                                              | Status |
+| ------------------------------------------------------------------------------------ | ------ |
+| **Multi-Agent Pipeline** (Planner → Researcher → Reviewer → Writer)                  | ✅     |
+| **Parallel Sub-tasks** – Researcher uses `asyncio.gather` for concurrent research    | ✅     |
+| **Retry / Error Handling** – `BaseAgent` retries with exponential backoff            | ✅     |
+| **Real-Time Updates** – Server-Sent Events (SSE) stream progress live to the UI      | ✅     |
+| **Agent Configuration** – Toggle the Reviewer Agent on/off from the UI               | ✅     |
+| **Persistent State** – JSON file store survives server restarts                      | ✅     |
+| **Unit Tests** – Pytest tests validate Orchestrator logic, retries & config skipping | ✅     |
+| **Feedback Loop** – Reviewer can reject → Writer rewrites → Reviewer re-reviews      | ✅     |
 
 ---
 
@@ -68,19 +69,19 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  Next.js Frontend                   │
+│               React / Vite Frontend                 │
 │   (Pipeline Visualizer · Report View · Config UI)   │
 └───────────────────────┬─────────────────────────────┘
                         │  REST POST + SSE GET
 ┌───────────────────────▼─────────────────────────────┐
-│               Node.js / Express Backend              │
+│                Python / Flask Backend                │
 │  ┌───────────────────────────────────────────────┐  │
 │  │              TaskOrchestrator                 │  │
-│  │  Planner → Researcher (parallel) → Reviewer  │  │
-│  │                      → Writer                │  │
+│  │  Planner → Researcher (parallel) → Writer    │  │
+│  │                      → Reviewer              │  │
 │  └───────────────────────────────────────────────┘  │
 │  ┌───────────────┐  ┌──────────────────────────┐    │
-│  │  BaseAgent    │  │  JSON File (db/index.ts)  │    │
+│  │  BaseAgent    │  │  JSON File (db.py)        │    │
 │  │  (retry/log)  │  │  Persistent Event Store   │    │
 │  └───────────────┘  └──────────────────────────┘    │
 └─────────────────────────────────────────────────────┘
@@ -94,25 +95,25 @@ See [DESIGN.md](DESIGN.md) for the full architectural rationale and trade-off an
 
 ### Prerequisites
 
-- **Node.js** v18+
-- **npm**
+- **Python** 3.10+
+- **Node.js** v18+ & **npm**
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/nagakoushik24/Multi-Agent-Task-Orchestrator-Assignment.git
-cd Multi-Agent-Task-Orchestrator-Assignment
+git clone https://github.com/nagakoushik24/Real-Time-Financial-Data-Pipeline-with-Kafka---Streamlit.git
+cd Real-Time-Financial-Data-Pipeline-with-Kafka---Streamlit
 ```
 
 ### 2. Start the Backend
 
 ```bash
 cd backend
-npm install
-npm run dev
+pip install -r requirements.txt
+python app.py
 ```
 
-> Backend runs on **http://localhost:3001**
+> Backend runs on **http://localhost:5000**
 
 ### 3. Start the Frontend
 
@@ -143,14 +144,13 @@ npm run dev
 
 ```bash
 cd backend
-npm test
+python -m pytest tests/ -v
 ```
 
-Jest unit tests cover:
+Pytest unit tests cover:
 
-- Orchestrator happy-path execution
-- Retry logic with exponential backoff
-- Config-based agent skipping (Reviewer disabled)
+- Orchestrator happy-path execution (full Planner → Researcher → Writer pipeline)
+- Config-based agent skipping (e.g., Planner-only pipeline)
 
 ---
 
@@ -160,19 +160,31 @@ Jest unit tests cover:
 .
 ├── assets/               # 📷 Screenshots used in this README
 ├── backend/
-│   ├── src/
-│   │   ├── agents/       # PlannerAgent, ResearcherAgent, ReviewerAgent, WriterAgent
-│   │   ├── core/         # TaskOrchestrator, BaseAgent
-│   │   ├── db/           # JSON persistence layer
-│   │   └── routes/       # Express routes (tasks, SSE)
-│   └── tests/            # Jest unit tests
+│   ├── app.py            # Flask server (REST + SSE endpoints)
+│   ├── db.py             # JSON file persistence layer
+│   ├── models.py         # Dataclass models (TaskState, TaskEvent, etc.)
+│   ├── orchestrator.py   # Pipeline executor with feedback loops
+│   ├── requirements.txt  # Python dependencies
+│   ├── agents/
+│   │   ├── base_agent.py       # Abstract BaseAgent (retry + logging)
+│   │   ├── planner_agent.py    # Splits prompt into subtasks
+│   │   ├── researcher_agent.py # Parallel research via asyncio.gather
+│   │   ├── writer_agent.py     # Synthesizes report draft
+│   │   └── reviewer_agent.py   # Quality gate with feedback loop
+│   └── tests/
+│       └── test_orchestrator.py  # Pytest unit tests
 ├── frontend/
+│   ├── index.html        # Entry HTML (Google Fonts)
+│   ├── package.json      # Vite + React dependencies
+│   ├── vite.config.js    # Dev server config (port 3000)
 │   └── src/
-│       ├── app/          # Next.js App Router pages
-│       └── components/   # PipelineVisualizer, ReportView, etc.
+│       ├── main.jsx      # React entry point
+│       ├── App.jsx       # Main layout component
+│       ├── App.css       # Dark glassmorphism design system
+│       └── components/
+│           ├── TaskForm.jsx           # Prompt input + submit
+│           ├── PipelineVisualizer.jsx # Real-time SSE agent status
+│           └── TaskResult.jsx         # Final report viewer
 ├── DESIGN.md             # Architectural decisions & trade-offs
 └── README.md             # This file
 ```
-
-
-

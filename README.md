@@ -2,7 +2,7 @@
 
 > A lightweight platform where multiple simulated AI agents collaborate to complete a complex research task — built for the **Paramount Take-Home Assignment**.
 
-**Tech Stack:** Node.js · Express · Next.js · TypeScript · Server-Sent Events · Jest
+**Tech Stack:** Node.js · Express · Next.js · TypeScript · Server-Sent Events · Python . FastAPI
 
 ---
 
@@ -173,5 +173,6 @@ Jest unit tests cover:
 ├── DESIGN.md             # Architectural decisions & trade-offs
 └── README.md             # This file
 ```
+
 
 
